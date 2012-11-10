@@ -10,11 +10,7 @@ var handlers = {
     "genre": "Action, Thriller ",
     "link": "https://www.facebook.com/pages/American-History-X-Official/250416101735363",
     "created_time": "2012-11-04T16:37:48+0000",
-    "rating": 5.4,
-    guru: {
-      name: 'Corneliu Prodescu',
-      
-    }
+    rating: 5.4
   },
   {
     "id": "136588786389818",
@@ -22,7 +18,13 @@ var handlers = {
     "likes": 751545,
     "genre": "Comedy",
     "link": "https://www.facebook.com/projectx",
-    "created_time": "2012-10-23T18:22:42+0000"
+    "created_time": "2012-10-23T18:22:42+0000",
+    rating: 5.4,
+    guru: {
+      name: 'Corneliu Prodescu',
+      picture: 'http://25.media.tumblr.com/tumblr_md5599IaDr1rfsim9o1_400.gif',
+      type: 'horror'
+    }
   },
   {
     "id": "453062304712571",
@@ -39,7 +41,7 @@ var handlers = {
     "genre": "Fantasy; Disney",
     "link": "https://www.facebook.com/pages/Peter-Pan-2003-Version/139770505599",
     "created_time": "2012-10-20T23:04:16+0000",
-    "rating": 5
+    rating: 5
   },
   {
     "id": "317928348241564",
@@ -55,7 +57,8 @@ var handlers = {
     "likes": 98530,
     "link": "https://www.facebook.com/RebelwoutaCause",
     "created_time": "2012-10-06T20:58:07+0000",
-    "rating": 8.6
+    rating: 8.6,
+    friends_recommended: 269
   },
   {
     "id": "59386114427",
@@ -86,7 +89,7 @@ var handlers = {
     "likes": 1439028,
     "link": "https://www.facebook.com/pages/Scary-Movie-3/105474822820828",
     "created_time": "2012-09-17T23:06:56+0000",
-    "rating": 6.8
+    rating: 6.8
   },
   {
     "id": "92284851236",
@@ -109,7 +112,7 @@ var handlers = {
     "likes": 2530870,
     "link": "https://www.facebook.com/thedarkknightrises",
     "created_time": "2012-09-17T23:06:45+0000",
-    "rating": 9.3
+    rating: 9.3
   },
   {
     "id": "117923511567854",
@@ -159,7 +162,7 @@ var handlers = {
     "likes": 2814,
     "link": "http://www.imdb.com/title/tt1477076/",
     "created_time": "2012-09-14T22:22:26+0000",
-    "rating": 4.2
+    rating: 4.2
   },
   {
     "id": "141741409194019",

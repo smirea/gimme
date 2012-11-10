@@ -39,6 +39,7 @@ var views = {
     var url = 'javascript:void(0)';
 
     $title.on('click.expand_info', function _on_click_expand_info () {
+      $('.search-result .movie-info').hide();
       $info.toggle();
     });
 
@@ -50,17 +51,21 @@ var views = {
         '<div class="clearfix"></div>'
       );
 
-    $container.append(
-      jq_element('a').
-        attr({
-          'class': 'movie-wrapper',
-          href: 'javascript:void(0)'
-        }).append(
-          $title,
-          jq_element('div').addClass('clearfix'),
-          $info
-        )
-    );
+    $container.
+      addClass('search-result').
+      append(
+        jq_element('a').
+          attr({
+            'class': 'movie-wrapper '+
+              (data.guru ? 'guru-recommended ' : '') +
+              (data.friends_recommended ? 'friends-recommended' : ''),
+            href: 'javascript:void(0)'
+          }).append(
+            $title,
+            jq_element('div').addClass('clearfix'),
+            $info
+          )
+      );
     return $container;
   },
   movie_title: function movie_title_view (data) {
@@ -77,29 +82,62 @@ var views = {
     var get_value_class = function get_value_class (value, multiplier) {
       var cls;
       var i;
-      var range = 1;
-      for (i=3; i<arguments.length; ++i) {
+      var range = multiplier;
+      for (i=2; i<arguments.length; ++i) {
         cls = arguments[i];
-        range *= multiplier;
         if (value < range) {
           break;
         }
+        range *= multiplier;
       }
+      return cls;
     }
     var likes_cls = get_value_class(data.likes, 1000, 'normal', 'thousands', 'millions');
-    var rating_cls = get_value_class(data.rating, 'bad', 'good', 'great', 'excellent');
-    return jq_element('div').
-      addClass('movie-title').
-      html(
-        '<span class="name">'+data.name+'</span>' +
-        '<div class="pull-right">' +
-          (data.likes ? '<span class="likes tag '+likes_cls+'">'+
-            '<i class="icon-thumbs-up"></i>'+' '+format_likes(data.likes)+
-            '</span>' : '') +
-          (data.rating ? '<span class="rating tag '+rating_cls+'">'+
-            '<i class="icon-star"></i>'+' '+data.rating+'</span>' : '') +
-        '</div>'
+    var $container = jq_element('div');
+    var $wrapper = jq_element('div').addClass('pull-right');
+
+    if (data.rating) {
+      $container.append(
+        jq_element('span').
+          addClass('likes tag').
+          append('<span class="rating">'+data.rating+'</span>')
+      );
+    }
+
+    $container.append(
+      jq_element('span').addClass('name').html(data.name)
     );
+
+    if (data.friends_recommended) {
+      $wrapper.append(
+        jq_element('i').
+          addClass('icon-user has-tooltip').
+          attr('title', data.friends_recommended+' friends recommended this')
+      );
+    }
+    if (data.guru) {
+     $wrapper.append(
+        jq_element('img').
+          addClass('has-tooltip').
+          attr({
+            src: data.guru.picture,
+            width: 22,
+            title: 'Recommended by you '+data.guru.type+' guru'
+          })
+      );
+    }
+    if (data.likes) {
+      $wrapper.append(
+        jq_element('span').
+          addClass('likes tag '+likes_cls).
+          append('<i class="icon-thumbs-up"></i>'+' '+format_likes(data.likes))
+      );
+    }
+    $container.
+      addClass('movie-title ').
+      append($wrapper).
+      find('.has-tooltip').tooltip();
+    return $container;
   }
 };
 
@@ -115,7 +153,8 @@ window.fbAsyncInit = function() {
 
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
-      console.log('Access token:', FB.getAuthResponse()['accessToken']);
+      console.log('Access token:', response.authResponse.accessToken);
+      console.log('UserID:', response.authResponse.userID);
       do_login();
     } else if (response.status === 'not_authorized') {
       console.log('not authorized');
@@ -133,8 +172,6 @@ var init_globals = function init_globals () {
 
 var do_login = function do_login () {
   var fields = 'id,name,link,cover,about,picture';
-                //',movies.fields(id,name,likes,genre,link)' +
-                //',friends.fields(id,name,movies.fields(id,name,likes,genre,link))';
   FB.api('/me?fields='+fields, function on_response (response){ 
     if (response.error) {
       console.warn(response.error);

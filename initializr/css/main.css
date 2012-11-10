@@ -14,6 +14,7 @@ body {
 }
 
 #query {
+  border: 4px solid #ccc;
   font-size: 20pt;
   height: auto;
   line-height: 30pt;
@@ -36,25 +37,45 @@ body {
   list-style-type: none;
 }
 #result li {
-  box-shadow: 0px 0px 0pt 2pt #999;
-  border: 2px solid #bbb;
-  border-radius: 2px;
+  position: relative;
   margin: 5px 0;
+  padding: 0;
 }
 
 .movie-wrapper {
   display: block;
+  box-shadow: 0px 0px 0pt 2pt #999;
+  border: 2px solid #bbb;
+  border-radius: 2px;
+  margin: 0;
+  padding: 0;
   text-decoration: none;
   color: #333;
+  overflow: hidden;
 }
 .movie-wrapper:hover {
   background: #DBF1FF;
   text-decoration: none;
   color: #333;
 }
+.movie-wrapper.guru-recommended {
+  box-shadow: 0px 0px 0pt 2pt #008500;
+  border-color: #28CD28;
+  background: #CBFFBD;
+}
+.movie-wrapper.guru-recommended .movie-title,
+.movie-wrapper.friends-recommended .movie-title {
+  font-weight: bold;
+}
+.movie-wrapper.friends-recommended {
+  box-shadow: 0px 0px 0pt 2pt #016f70;
+  border-color: #2c4081;
+  background: #BDD1FF;
+}
 .movie-title {
+  position: relative;
   background: rgba(125, 125, 125, 0.05);
-  padding: 2px 5px;
+  padding: 2px 5px 2px 33px;
 }
 .movie-info {
   border-top: 1px solid #ccc;
@@ -62,9 +83,22 @@ body {
 }
 .movie-title .tag {
   display: inline-block;
-  margin-left: 5px;
-  height: 100%;
+  margin-left: 2px;
 }
 .movie-title .tag img {
   vertical-align: middle;
 }
+.movie-title .tag .rating {
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-right: 1px solid #ccc;
+  background: rgba(0, 0, 0, 0.1);
+  width: 30px;
+  line-height: 24px;
+  text-align: center;
+}
+.tag.normal {}
+.tag.thousands {color: green;}
+.tag.millions {color: #0000ff;}
