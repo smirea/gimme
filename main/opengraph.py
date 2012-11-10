@@ -4,6 +4,7 @@ import json
 class Graph(object):
   base_url = 'https://graph.facebook.com'
   personal_fields = 'id,first_name,last_name,name,gender'
+  movie_fields = 'id,likes,name,category'
 
   def __init__(self, access_token):
     self.access_token = access_token
@@ -29,9 +30,15 @@ class Graph(object):
 
   @staticmethod
   def get_approximate_movie_data(movie_name):
-    #TODO: in progress
-    url = Graph.base_url + "/search?q={}&type=page".format(movie_name)
-    data = Graph.get_data(url)
+    limit = 25 # hardcoded
+    url = Graph.base_url + \
+      "/search?q={}&type=page&fields={}&limit={}".format(
+        movie_name, Graph.movie_fields, limit
+    )
+    data = Graph.query(url)["data"]
+    data = sorted(data, key=lambda x: x["likes"])
+    movie = data[-1]
+    Graph.get_movie_data(movie["id"]) # print, return or model here?
 
   @staticmethod
   def get_movie_data(movie_id):
@@ -88,4 +95,5 @@ if __name__ == '__main__':
   graph = Graph(access_token)
   #graph.get_my_data()
   #graph.get_friend_data(1208022)
-  Graph.get_movie_data(255794484489801)
+  #Graph.get_movie_data(255794484489801)
+  #Graph.get_approximate_movie_data('Avengers')
