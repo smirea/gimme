@@ -9,6 +9,8 @@ class Movie(models.Model):
   tagline = models.CharField(max_length=1024)
   description = models.TextField()
   imdb_url = models.URLField(max_length=256)
+  fb_url = models.URLField(max_length=256)
+  fb_likes = models.IntegerField(default=0, db_index=True)
   picture_url = models.URLField(max_length=256)
 
   def __unicode__(self):
@@ -37,12 +39,8 @@ class Person(models.Model):
     (FEMALE, 'Female'),
   )
 
-  fbid = models.BigIntegerField(default=0, primary_key=True)
-  fname = models.CharField(max_length=128)
-  lname = models.CharField(max_length=128)
-  email = models.EmailField(max_length=128)
-  fburl = models.CharField(max_length=128)
-  picture = models.CharField(max_length=128)
+  user = models.OneToOneField(User, primary_key=True)
+  fbid = models.BigIntegerField(default=0)
   gender = models.IntegerField(choices=GENDER, default=MALE)
 
   friends = models.ManyToManyField("self")
@@ -59,9 +57,10 @@ class Person(models.Model):
 class Seen(models.Model):
   person = models.ForeignKey(Person)
   movie = models.ForeignKey(Movie)
-  rating = models.FloatField(default=0.0)
+  rating = models.FloatField(default=0.0, null=True, blank=True)
   liked = models.BooleanField(default=False)
   review = models.TextField(null=True, blank=True, default=None)
+  when_added = models.DateTimeField(auto_now_add=True)
 
   def __unicode__(self):
     return u'Movie id={0} seen by fbid={1}'.format(
