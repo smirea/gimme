@@ -14,9 +14,9 @@ MANAGERS = ADMINS
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'imdb',
+    'NAME': 'MYIMDB',
     'USER': 'root',
-    'PASSWORD': '',
+    'PASSWORD': '123',
     'HOST': 'localhost',
     'PORT': '',
   }
