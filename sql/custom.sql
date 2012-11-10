@@ -6,7 +6,11 @@ CREATE TABLE Movie (
     votes integer NOT NULL,
     description text NOT NULL,
     imdb_url varchar(256) NOT NULL,
-    picture_url varchar(256) NOT NULL
+    picture_url varchar(256) NOT NULL,
+    INDEX index_name (name),
+    INDEX index_year (year),
+    INDEX index_rating (rating),
+    INDEX index_votes (votes)
 )
 ;
 CREATE TABLE Taglines (
@@ -18,7 +22,9 @@ CREATE TABLE Taglines (
 CREATE TABLE Genres (
     genre_id integer NOT NULL REFERENCES Genre (id),
     movie_id integer NOT NULL REFERENCES Movie (id),
-    UNIQUE (genre_id, movie_id)
+    UNIQUE (genre_id, movie_id),
+    INDEX index_genre (genre_id),
+    INDEX index_movie (movie_id)
 )
 ;
 CREATE TABLE Genre (
