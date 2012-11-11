@@ -66,7 +66,8 @@ def friend_list(request):
       "name": u"{0} {1}".format(friend.user.first_name, friend.user.last_name),
     })
 
-  return HttpResponse(json.dumps(data))
+  return HttpResponse(json.dumps(data),
+      content_type='application/json')
 
 def query(request):
   q = request.GET.get('q', '')
@@ -99,4 +100,5 @@ def query(request):
         movie_dict[field] = getattr(movie, field)
     data.append(movie_dict)
 
-  return HttpResponse(json.dumps(data))
+  return HttpResponse(json.dumps(data),
+      content_type='application/json')
