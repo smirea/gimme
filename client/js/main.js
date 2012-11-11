@@ -1,14 +1,20 @@
 
 var options = {
   urls: {
-    search: 'http://localhost:8000/api/query?q=',
-    login: 'http://localhost:8000/api/login?'
+    search: 'http://localhost:8000/api/query',
+    login: 'http://localhost:8000/api/login',
+    friend_list: 'http://localhost:8000/api/friend_list'
   }
 };
 
 var $query;
 var $form;
 var $result;
+var friends = {};
+var friend_names = [];
+
+// all names ever tagged in the query field
+var tags = [];
 
 // load facebook JS SDK
 (function() {
@@ -22,8 +28,38 @@ var $result;
 
 $(function _on_document_load () {
   init_globals();
+  load_friends();
 
-  $query.focus();
+  var last_start = -1;
+  var last_end = -1;
+  $query
+    .focus()
+    .typeahead({
+      source: function _query_typehead_source () {
+        return friend_names;
+      },
+      matcher: function (item) {
+        var caret = $query.caret();
+        var caret_end = Math.max(caret.start, caret.end);
+        var str = $query.val();
+        var name_start = str.lastIndexOf('@', caret_end);
+        if (name_start > -1) {
+          str = str.slice(name_start + 1, caret_end);
+          last_start = name_start;
+          if (str.length > 2) {
+            last_end = caret_end;
+            return (new RegExp(str, 'i')).test(item);
+          }
+        }
+        return false;
+      },
+      updater: function (item) {
+        tags.push(friends[item].id);
+        var value = $query.val();
+        return value.slice(0, last_start) + '@' + item + value.slice(last_end);
+      }
+    });
+
   $form
     .on('submit.do_search', function _on_submit_do_search (event) {
       event.preventDefault();
@@ -34,8 +70,7 @@ $(function _on_document_load () {
           $result.append(views.movie_result(result[i]));
         }
       });
-    })
-    .trigger('submit');
+    });
 });
 
 var views = {
@@ -174,7 +209,6 @@ window.fbAsyncInit = function() {
     if (response.status === 'connected') {
       console.log('Access token:', response.authResponse.accessToken);
       console.log('UserID:', response.authResponse.userID);
-      //do_login();
     } else if (response.status === 'not_authorized') {
       console.log('not authorized');
     } else {
@@ -182,6 +216,22 @@ window.fbAsyncInit = function() {
     }
   });
 };
+
+var load_friends = function load_friends () {
+  $.get(options.urls.friend_list, function _get_friends (response) {
+    var fr;
+    var i;
+    if (typeof response == 'string') {
+      fr = JSON.parse(response);
+    } else {
+      fr = response;
+    }
+    for (i=0; i<fr.length; ++i) {
+      friends[fr[i].name] = fr[i];
+      friend_names.push(fr[i].name);
+    }
+  });
+}
 
 var init_globals = function init_globals () {
   $query = $('#query');
