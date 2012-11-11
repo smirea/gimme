@@ -3,68 +3,43 @@ var options = {
   urls: {
     search: 'http://localhost:8000/api/query',
     login: 'http://localhost:8000/api/login',
-    friend_list: 'http://localhost:8000/api/friend_list'
+    friend_list: 'http://localhost:8000/api/friend_list',
+    cinemas: 'http://localhost:8000/api/cinema'
   }
 };
 
 var $query;
 var $form;
 var $result;
+var $single_view;
+var $map;
 var friends = {};
 var friend_names = [];
+
+var map;
+var infowindow;
+var markers;
 
 // all names ever tagged in the query field
 var tags = [];
 
 // load facebook JS SDK
 (function() {
-  var e = document.createElement('script');
-  e.type = 'text/javascript';
-  e.src = document.location.protocol +
-      '//connect.facebook.net/en_US/all.js';
-  e.async = true;
-  document.getElementById('fb-root').appendChild(e);
+  if (!window.userData) {
+    var e = document.createElement('script');
+    e.type = 'text/javascript';
+    e.src = document.location.protocol +
+        '//connect.facebook.net/en_US/all.js';
+    e.async = true;
+    document.getElementById('fb-root').appendChild(e);
+  }
 }());
 
 $(function _on_document_load () {
   init_globals();
   load_friends();
   setup_ui();
-
-  var last_start = -1;
-  var last_end = -1;
-  $query
-    .focus()
-    .typeahead({
-      source: function _query_typehead_source () {
-        return friend_names;
-      },
-      matcher: function (item) {
-        var caret = $query.caret();
-        var caret_end = Math.max(caret.start, caret.end);
-        var str = $query.val();
-        var name_start = str.lastIndexOf('@', caret_end);
-        if (name_start > -1) {
-          str = str.slice(name_start + 1, caret_end);
-          last_start = name_start;
-          if (str.length > 2) {
-            last_end = caret_end;
-            return (new RegExp(str, 'i')).test(item);
-          }
-        }
-        return false;
-      },
-      updater: function (item) {
-        tags.push(friends[item].id);
-        var value = $query.val();
-        return value.slice(0, last_start) + '@' + item + ' ' + value.slice(last_end);
-      },
-      highlighter: function (item) {
-        return '<img src="https://graph.facebook.com/'+
-                  friends[item].fb_id+
-                '/picture" width="20"/> '+item;
-      }
-    });
+  setup_typeahead();
 
   $form
     .on('submit.do_search', function _on_submit_do_search (event) {
@@ -73,6 +48,18 @@ $(function _on_document_load () {
       handlers.search($query.val(), function _on_search_reply (result) {
         var i;
         var expand_id;
+        if (result.length > 0) {
+          result[0].guru = {
+            name: 'Corneliu Prodescu',
+            picture: 'http://graph.facebook.com/1068801676/picture',
+            type: 'general'
+          };
+          if (result.length > 1) {
+            var index = 1 + Math.floor(Math.random() * result.length - 1);
+            result[index].friends_recommended = Math.floor(Math.random() * 300);
+          }
+        }
+
         for (i=0; i<result.length; ++i) {
           $result.append(views.movie_result(result[i]));
         }
@@ -81,6 +68,40 @@ $(function _on_document_load () {
 });
 
 var views = {
+  search_view: function search_view () {
+    $single_view.slideDown('normal', function () {
+      $form.show().css({
+        opacity: 1
+      });
+    });
+  },
+  single_view: function single_view (data) {
+    var old = {
+      marginTop: $form.css('margin-top')
+    };
+    $form.animate({
+      marginTop: 0,
+      opacity: 0
+    }, 600, function () {
+      $form.hide().css(old);
+    });
+    $single_view.
+      fadeIn(400).
+      append(
+        '<table>'+
+          '<tr><td colspan="2" style="font-size:20pt">'+data.name+'</td></tr>'+
+          '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
+          '<tr><td><b>friends liked</b></td><td>'+data.friends_recommended+'</td></tr>'+
+          '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
+        '</table>'+
+        '<div>'+data.description+'</div>'+
+        '<div>'+data.taglines.join('<br />')+'</div>',
+        $map,
+        '<img src="/static/img/netflix.jpg" />'+
+        '<img src="/static/img/amazon.jpg" />'
+    )
+    setup_map();
+  },
   movie_result: function movie_result_view (data) {
     var $container = jq_element('li');
     var $title = views.movie_title(data);
@@ -92,11 +113,22 @@ var views = {
       $info.toggle();
     });
 
+    var $movie_link = jq_element('a');
+    $movie_link.
+      attr({
+        href: url,
+        'class': 'btn btn-primary pull-right'
+      }).
+      html('go to movie').
+      on('click.single_view', function _on_click_single_view () {
+        views.single_view(data);
+      });
+
     $info.
       hide().
       addClass('movie-info').
-      html('<div>to be added l8er</div>' +
-        '<a href="'+url+'" class="btn btn-primary pull-right">go to movie</a>' +
+      append('<div>to be added l8er</div>',
+        $movie_link,
         '<div class="clearfix"></div>'
       );
 
@@ -227,6 +259,61 @@ window.fbAsyncInit = function() {
   });
 };
 
+function createMarker(place) {
+  var placeLoc = place.geometry.location;
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location
+  });
+
+  google.maps.event.addListener(marker, 'click', function() {
+    console.log(JSON.stringify(place, null, 2));
+    infowindow.setContent(
+      '<img src="' + place.icon + '" height="32" style="float:left; margin: 3px 5px 0 0" />' +
+      '<b>' + place.name + '</b>' +
+      '<div>' + place.vicinity + '</div>'
+    );
+    infowindow.open(map, this);
+  });
+}
+
+var setup_typeahead = function setup_typeahead () {
+  var last_start = -1;
+  var last_end = -1;
+  $query
+    .focus()
+    .typeahead({
+      source: function _query_typehead_source () {
+        return friend_names;
+      },
+      matcher: function (item) {
+        var caret = $query.caret();
+        var caret_end = Math.max(caret.start, caret.end);
+        var str = $query.val();
+        var name_start = str.lastIndexOf('@', caret_end);
+        if (name_start > -1) {
+          str = str.slice(name_start + 1, caret_end);
+          last_start = name_start;
+          if (str.length > 1) {
+            last_end = caret_end;
+            return (new RegExp(str, 'i')).test(item);
+          }
+        }
+        return false;
+      },
+      updater: function (item) {
+        tags.push(friends[item].id);
+        var value = $query.val();
+        return value.slice(0, last_start) + '@' + item + ' ' + value.slice(last_end);
+      },
+      highlighter: function (item) {
+        return '<img src="https://graph.facebook.com/'+
+                  friends[item].fb_id+
+                '/picture" width="20"/> '+item;
+      }
+    });
+}
+
 var setup_ui = function setup_ui () {
   if (window.userData) {
     var $profile = jq_element('div');
@@ -265,6 +352,8 @@ var init_globals = function init_globals () {
   $query = $('#query');
   $form = $('#query-form');
   $result = $('#result');
+  $single_view = $('#single-view');
+  $map = $('#map');
 }
 
 var do_login = function do_login (response) {
@@ -280,3 +369,53 @@ var do_login = function do_login (response) {
 var jq_element = function jq_element (type) {
   return $(document.createElement(type));
 };
+
+function setup_map () {
+  initialize();
+
+  function initialize() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      zoom: 10
+    });
+
+    set_location();
+  }
+
+  function set_location () {
+    GeoMarker = new GeolocationMarker();
+    GeoMarker.setCircleOptions({
+      fillColor: '#808080'
+    });
+
+    google.maps.event.addListenerOnce(GeoMarker, 'position_changed', function(){
+      map.setCenter(this.getPosition());
+    });
+
+    google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
+      console.warn('Could not get geolocation: ' + e.message);
+    });
+
+    GeoMarker.setMap(map);
+  }
+}
+
+function createMarker(place) {
+  var placeLoc = place.geometry.location;
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location
+  });
+
+  markers.push(marker);
+
+  google.maps.event.addListener(marker, 'click', function() {
+    console.log(JSON.stringify(place, null, 2));
+    infowindow.setContent(
+      '<img src="' + place.icon + '" height="32" style="float:left; margin: 3px 5px 0 0" />' +
+      '<b>' + place.name + '</b>' +
+      '<div>' + place.vicinity + '</div>'
+    );
+    infowindow.open(map, this);
+  });
+}

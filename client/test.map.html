@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"></script>
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDCcPkqLQN7Yyqt5ABeNwxS0IwEN42ogn4&sensor=true&libraries=places"></script>
+    <script src="gmaps-utility-library/markerclustererplus/src/markerclusterer_packed.js"></script>
+    <script src="gmaps-utility-library/geolocationmarker/src/geolocationmarker-compiled.js"></script>
+
+    <style>
+      #map {
+        height: 400px;
+        width: 600px;
+        border: 1px solid #333;
+        margin-top: 0.6em;
+      }
+    </style>
+
+    <script>
+      var map;
+      var infowindow;
+
+      function initialize() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          zoom: 15
+        });
+
+        set_location();
+      }
+
+      google.maps.event.addDomListener(window, 'load', initialize);
+
+      function set_location () {
+        GeoMarker = new GeolocationMarker();
+        GeoMarker.setCircleOptions({
+          fillColor: '#808080'
+        });
+
+        google.maps.event.addListenerOnce(GeoMarker, 'position_changed', function(){
+          map.setCenter(this.getPosition());
+          get_nearby_cinemas(this.getPosition());
+        });
+
+        google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
+          console.warn('Could not get geolocation: ' + e.message);
+        });
+
+        GeoMarker.setMap(map);
+      }
+
+      function get_nearby_cinemas (position) {
+        var request = {
+          location: position,
+          radius: 10 * 1000,
+          types: ['movie_theater']
+        };
+        infowindow = new google.maps.InfoWindow();
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch(request, function callback(results, status) {
+          if (status == google.maps.places.PlacesServiceStatus.OK) {
+            for (var i = 0; i < results.length; i++) {
+              createMarker(results[i]);
+            }
+          }
+        });
+
+        function createMarker(place) {
+          var placeLoc = place.geometry.location;
+          var marker = new google.maps.Marker({
+            map: map,
+            position: place.geometry.location
+          });
+
+          google.maps.event.addListener(marker, 'click', function() {
+            console.log(JSON.stringify(place, null, 2));
+            infowindow.setContent(
+              '<img src="' + place.icon + '" height="32" style="float:left; margin: 3px 5px 0 0" />' +
+              '<b>' + place.name + '</b>' +
+              '<div>' + place.vicinity + '</div>'
+            );
+            infowindow.open(map, this);
+          });
+        }
+
+      }
+
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>

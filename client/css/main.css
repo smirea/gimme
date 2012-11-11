@@ -9,6 +9,8 @@ body {
   right: 0;
   left: 0;
   background-image: -webkit-linear-gradient(top,#222,#111);
+  padding-left: 20px;
+  padding-right: 20px;
   line-height: 50px;
 }
 
@@ -121,4 +123,18 @@ body {
 input:hover::-webkit-input-placeholder {
   opacity: 0;
   -webkit-transition: opacity 1s;
+}
+
+#single-view {
+  border: 1px solid #ccc;
+  background: rgba(255, 255, 255, 0.8);
+  width: 600px;
+  margin: 0 auto;
+  padding: 10px;
+}
+#map {
+  height: 350px;
+  width: 600px;
+  border: 1px solid #333;
+  margin-top: 0.6em;
 }

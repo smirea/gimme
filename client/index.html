@@ -15,6 +15,11 @@
   <link rel="stylesheet" href="/static/css/main.css">
 
   <script src="/static/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>
+
+  <script type="text/javascript"
+    src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDCcPkqLQN7Yyqt5ABeNwxS0IwEN42ogn4&sensor=true&libraries=places"></script>
+  <script src="/static/gmaps-utility-library/markerclustererplus/src/markerclusterer_packed.js"></script>
+  <script src="/static/gmaps-utility-library/geolocationmarker/src/geolocationmarker-compiled.js"></script>
 </head>
 <body>
 <!--[if lt IE 7]>
@@ -31,12 +36,14 @@
     </div>
   </nav>
 
-
   <form class="form-search" id="query-form">
-    <input type="text" name="query" id="query" class="search-query input-block-level" placeholder="begin typing to search" autocomplete="off" />
+    <input type="text" name="query" id="query" class="search-query input-block-level" placeholder="begin typing to search" autocomplete="off" x-webkit-speech speech />
     <ul id="result"></ul>
-
   </form>
+
+  <section id="single-view" style="display:none">
+    <div id="map"></div>
+  </section>
 
   <footer style="text-align:center; position:fixed; z-index: -1; bottom: 0; left:0; right: 0">
     <img src="/static/img/gimme.png" alt="gimme!" width="100%" style="opacity:0.1" />
