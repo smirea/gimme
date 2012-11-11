@@ -20,6 +20,7 @@ def index(request):
                            '../client/index.html')
   content = open(file_name, 'rt').read()
   if request.user.is_authenticated():
+    #TODO: this seems broken..
     profile = request.user.get_profile()
     user_object = {
         'first_name': request.user.first_name,
@@ -38,16 +39,21 @@ def index(request):
   return HttpResponse(content)
 
 def test(request):
-  user = request.user.get_profile()
-  fbid = user.fbid
-  #TODO: ...
-  graph = Graph('AAAAAAITEghMBAPZCnBPmR1Tl7ynchZBfZArK4seZBGrZBga1vRL4fySuipXzXTevSvOf61PFypXbXAXuli1zoIVAZBBB1ZA8EYJ8MXVmB2auNHQZBNXT88EE')
-  update_movies(user, graph)
+  #TODO: this seems broken
+  #TODO: mb look into fixing this so that we get friend's movies
+  #user = request.user.get_profile()
+  #fbid = user.fbid
+  #TODO: UNHACK
+  fbid = 100000003935672
+  user_profile = Person.objects.get(fbid=fbid)
+  graph = Graph('AAAAAAITEghMBALnZCyaZBHvSHmcjOCffC2nZA4vrLG0aRh9ZCDpNMW7YnGLBmzWPZBRQ3VAazIdvh0SCxRQuLbiOOAe2LS44gIj2ymTg0QuuNUHZCSu1Yr')
+
+  update_movies(user_profile, graph)
   friends = graph.get_friends(fbid)
   for f in friends:
     friend_profile = Person.objects.get(fbid=f)
     update_movies(friend_profile, graph)
-  return HttpResponse(json.dumps(f),
+  return HttpResponse(json.dumps(friends),
       content_type='application/json')
 
 def update_movies(user_profile, graph):

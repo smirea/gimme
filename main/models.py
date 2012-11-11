@@ -12,9 +12,8 @@ class Movie(models.Model):
   votes = models.IntegerField(default=0, db_index=True)
   description = models.TextField()
   imdb_url = models.URLField(max_length=256)
-  fb_url = models.URLField(max_length=1024)
   fb_likes = models.IntegerField(default=0, db_index=True)
-  picture_url = models.URLField(max_length=256)
+  fbid = models.BigIntegerField(default=0)
 
   @staticmethod
   def get_movie(movie_data):
@@ -140,7 +139,9 @@ class Seen(models.Model):
     seen = Seen(person=user,movie=movie,liked=True)
     seen.save()
 
-    movie.fb_url = movie_data.get(u'link', '')
+    fbid = movie_data.get(u'id',None) 
+    if fbid != None:
+      movie.fbid = fbid
     movie.fb_likes = movie_data.get(u'likes', 0)
     movie.save()
 
