@@ -2,6 +2,7 @@ import json
 
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
@@ -9,10 +10,8 @@ from gimme.main.models import Movie, Person
 from gimme.main.opengraph import Graph
 
 
-def example(request):
-  if request.user:
-    return HttpResponse("Hello, " + request.user.first_name)
-  return HttpResponse("Hello, world!")
+def index(request):
+  return HttpResponse(open("client/index.html", "rt").read())
 
 
 @require_POST
@@ -31,13 +30,15 @@ def login_view(request):
   try:
     user_profile = Person.objects.get(fbid=fb_id)
   except Person.DoesNotExist:
-    user = Person.create_user(personal_data)
+    user_profile = Person.create_user(personal_data)[0]
     for friend_id in graph.get_my_friends():
       try:
         friend_profile = Person.objects.get(fbid=friend_id)
       except Person.DoesNotExist:
         personal_data = graph.get_personal_data(friend_id)
-        Person.create_user(personal_data)
+        friend_profile = Person.create_user(personal_data)[1]
+
+      user_profile.friends.add(friend_profile)
 
   user = authenticate(username=fb_id,
                       password=Person.get_user_password(fb_id))
@@ -50,6 +51,19 @@ def logout_view(request):
   logout(request)
   return HttpResponse("OK")
 
+@login_required
+def friend_list(request):
+  user = request.user
+  person = user.get_profile()
+
+  data = []
+  for friend in person.friends.select_related().all():
+    data.append({
+      "fb_id": friend.fbid,
+      "name": u"{0} {1}".format(friend.user.first_name, friend.user.last_name),
+    })
+
+  return HttpResponse(json.dumps(data))
 
 def query(request):
   q = request.GET.get('q', '')

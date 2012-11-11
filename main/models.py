@@ -76,7 +76,7 @@ class Person(models.Model):
         profile.gender = Person.FEMALE
     profile.save()
 
-    return user
+    return (user, profile)
 
   @staticmethod
   def get_user_password(fb_id):
