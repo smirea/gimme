@@ -82,7 +82,7 @@ def friend_list(request):
   data = []
   for friend in person.friends.select_related().all():
     data.append({
-      "id": friend.id,
+      "id": friend.user.id,
       "fb_id": friend.fbid,
       "name": u"{0} {1}".format(friend.user.first_name, friend.user.last_name),
     })

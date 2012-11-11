@@ -63,6 +63,7 @@ $(function _on_document_load () {
   $form
     .on('submit.do_search', function _on_submit_do_search (event) {
       event.preventDefault();
+      $result.empty();
       handlers.search($query.val(), function _on_search_reply (result) {
         var i;
         var expand_id;
