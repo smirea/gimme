@@ -1,5 +1,8 @@
-from django.db import models
+import md5
+
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import models, transaction
 
 class Movie(models.Model):
   name = models.CharField(max_length=128, db_index=True)
@@ -51,8 +54,36 @@ class Person(models.Model):
 
   def __unicode__(self):
     return u'Person fbid={0} fname={1} lname={2}'.format(
-        self.fbid, self.fname, self.lname
+        self.fbid, self.user.first_name, self.user.last_name
     )
+
+  @staticmethod
+  @transaction.commit_on_success
+  def create_user(personal_data):
+    user = User(username=personal_data[u'id'],
+                first_name=personal_data.get(u'first_name', ''),
+                last_name=personal_data.get(u'last_name', ''),
+                email=personal_data.get(u'email', ''))
+    user.set_password(Person.get_user_password(personal_data[u'id']))
+    user.save()
+
+    profile = Person(user=user)
+    profile.fbid = personal_data[u'id']
+    if u'gender' in personal_data:
+      if personal_data[u'gender'] == 'male':
+        profile.gender = Person.MALE
+      elif personal_data[u'gender'] == 'female':
+        profile.gender = Person.FEMALE
+    profile.save()
+
+    return user
+
+  @staticmethod
+  def get_user_password(fb_id):
+    m = md5.new()
+    m.update(fb_id)
+    m.update(settings.SECRET_KEY)
+    return m.hexdigest()
 
 class Seen(models.Model):
   person = models.ForeignKey(Person)

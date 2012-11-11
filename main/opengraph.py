@@ -70,9 +70,7 @@ class Graph(object):
     url = Graph.base_url + \
         "/me/friends?access_token={}".format(self.access_token)
     data = Graph.get_data(url)
-    for entry in data:
-      friend_id = entry['id']
-      friend_data = self.get_friend_data(friend_id)
+    return [entry['id'] for entry in data]
 
   def get_personal_data(self, user_id=None):
     if user_id == None:
@@ -83,12 +81,6 @@ class Graph(object):
         )
     return Graph.query(url)
 
-  def get_my_data(self):
-    personal_data = self.get_personal_data()
-    movies = self.get_movies()
-    print personal_data
-    print movies
-    self.get_my_friends()
     
 if __name__ == '__main__':
   access_token='AAAAAAITEghMBAI5nVAbUg3Y9UFeUzOV51uo9fYXUQo1UyV4F9EbbeFm5XQLAlCvWsnEHVclM6A2wjznPVrvLlhCQh3HeLzc4Aoe0D0denoT1XOjb'
