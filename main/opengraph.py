@@ -60,12 +60,6 @@ class Graph(object):
         movies.append(e)
     return movies
 
-  def get_friend_data(self, friend_id):
-    personal_data = self.get_personal_data(friend_id)
-    movies = self.get_movies(friend_id)
-    print personal_data
-    print movies
-
   def get_my_friends(self):
     url = Graph.base_url + \
         "/me/friends?access_token={}".format(self.access_token)
@@ -81,7 +75,13 @@ class Graph(object):
         )
     return Graph.query(url)
 
-    
+  def get_personal_data_multi(self, user_ids):
+    url = Graph.base_url + \
+        "/?ids={}&access_token={}&fields={}".format(
+            ','.join(user_ids), self.access_token, Graph.personal_fields)
+    return Graph.query(url)
+
+
 if __name__ == '__main__':
   access_token='AAAAAAITEghMBAI5nVAbUg3Y9UFeUzOV51uo9fYXUQo1UyV4F9EbbeFm5XQLAlCvWsnEHVclM6A2wjznPVrvLlhCQh3HeLzc4Aoe0D0denoT1XOjb'
   graph = Graph(access_token)

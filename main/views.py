@@ -29,14 +29,17 @@ def login_view(request):
 
   try:
     user_profile = Person.objects.get(fbid=fb_id)
+    user_profile.update_info(personal_data)
   except Person.DoesNotExist:
-    user_profile = Person.create_user(personal_data)[0]
-    for friend_id in graph.get_my_friends():
+    user_profile = Person.create_user(personal_data)
+
+    all_friend_data = graph.get_personal_data_multi(graph.get_my_friends())
+    for friend_id, friend_data in all_friend_data.iteritems():
       try:
         friend_profile = Person.objects.get(fbid=friend_id)
+        friend_profile.update_info(friend_data)
       except Person.DoesNotExist:
-        personal_data = graph.get_personal_data(friend_id)
-        friend_profile = Person.create_user(personal_data)[1]
+        friend_profile = Person.create_user(friend_data)
 
       user_profile.friends.add(friend_profile)
 

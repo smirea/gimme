@@ -76,7 +76,26 @@ class Person(models.Model):
         profile.gender = Person.FEMALE
     profile.save()
 
-    return (user, profile)
+    return profile
+
+  @transaction.commit_on_success
+  def update_info(self, personal_data):
+    user = self.user
+
+    if u'first_name' in personal_data:
+      user.first_name = personal_data[u'first_name']
+    if u'last_name' in personal_data:
+      user.last_name = personal_data[u'last_name']
+    if u'email' in personal_data:
+      user.email = personal_data[u'email']
+    user.save()
+
+    if u'gender' in personal_data:
+      if personal_data[u'gender'] == 'male':
+        self.gender = Person.MALE
+      elif personal_data[u'gender'] == 'female':
+        self.gender = Person.FEMALE
+      self.save()
 
   @staticmethod
   def get_user_password(fb_id):
