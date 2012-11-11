@@ -89,6 +89,7 @@ var views = {
     }, 600, function () {
       $form.hide().css(old);
     });
+    console.log(data);
     $single_view.
       fadeIn(400).
       append(
@@ -96,7 +97,7 @@ var views = {
           '<tr><td colspan="2" style="font-size:20pt">'+data.name+'</td></tr>'+
           '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
           '<tr><td><b>friend likes</b></td><td>'+data.friends_recommended.length+'</td></tr>'+
-          '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
+          '<tr><td><b>genres</b></td><td>'+data.genres.join(', ')+'</td></tr>'+
         '</table>'+
         '<div>'+data.description+'</div>'+
         '<div>'+data.taglines.join('<br />')+'</div>'+
@@ -219,7 +220,9 @@ var views = {
     }
 
     $container.append(
-      jq_element('span').addClass('name').html(data.name)
+      jq_element('span').addClass('name').html(
+        data.name + (data.year ? ' ('+data.year+')' : '')
+      )
     );
 
     if (data.friends_recommended && data.friends_recommended.length > 0) {
