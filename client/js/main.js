@@ -100,7 +100,7 @@ var views = {
         '<img src="/static/img/netflix.jpg" />'+
         '<img src="/static/img/amazon.jpg" />'
     )
-    setup_map();
+    setup_map(data);
   },
   movie_result: function movie_result_view (data) {
     var $container = jq_element('li');
@@ -370,17 +370,20 @@ var jq_element = function jq_element (type) {
   return $(document.createElement(type));
 };
 
-function setup_map () {
-  initialize();
+function setup_map (data) {
+  
+  map = new google.maps.Map(document.getElementById('map'), {
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    zoom: 10
+  });
 
-  function initialize() {
-    map = new google.maps.Map(document.getElementById('map'), {
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      zoom: 10
-    });
-
-    set_location();
-  }
+  set_location();
+  
+  $.post(options.url.cinemas, {
+    q: data.name
+  }, function (response) {
+    console.log(response);
+  });
 
   function set_location () {
     GeoMarker = new GeolocationMarker();
