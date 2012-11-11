@@ -1,3 +1,4 @@
+import os
 import json
 
 from django.core.exceptions import PermissionDenied
@@ -11,7 +12,26 @@ from gimme.main.opengraph import Graph
 
 
 def index(request):
-  return HttpResponse(open("client/index.html", "rt").read())
+  file_name = os.path.join(os.path.dirname(__file__),
+                           '../client/index.html')
+  content = open(file_name, 'rt').read()
+  if request.user.is_authenticated():
+    profile = request.user.get_profile()
+    user_object = {
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'email': request.user.email,
+        'gender': profile.gender,
+        'fbid': profile.fbid
+    }
+
+    content += """
+<script type="text/javascript">
+  var userData = %s;
+</script>
+""" % json.dumps(user_object)
+  content += '</body></html>'
+  return HttpResponse(content)
 
 
 @require_POST
@@ -62,6 +82,7 @@ def friend_list(request):
   data = []
   for friend in person.friends.select_related().all():
     data.append({
+      "id": friend.id,
       "fb_id": friend.fbid,
       "name": u"{0} {1}".format(friend.user.first_name, friend.user.last_name),
     })
