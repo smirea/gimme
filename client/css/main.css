@@ -138,3 +138,7 @@ input:hover::-webkit-input-placeholder {
   border: 1px solid #333;
   margin-top: 0.6em;
 }
+.facepile a {
+  display: inline-block;
+  margin: 1px;
+}

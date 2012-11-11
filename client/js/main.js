@@ -15,6 +15,7 @@ var $single_view;
 var $map;
 var friends = {};
 var friend_names = [];
+var max_friend_recommendations = -1;
 
 var map;
 var infowindow;
@@ -62,6 +63,7 @@ $(function _on_document_load () {
           }
           */
         }
+        max_friend_recommendations = -1;
         for (i=0; i<result.length; ++i) {
           $result.append(views.movie_result(result[i]));
         }
@@ -108,7 +110,7 @@ var views = {
     var $container = jq_element('li');
     var $title = views.movie_title(data);
     var $info = jq_element('div');
-    var $facepile = jq_element('div');
+    var $facepile = jq_element('div').addClass('facepile');
     var url = 'javascript:void(0)';
     var i;
 
@@ -152,6 +154,17 @@ var views = {
         $facepile
       );
 
+    var cls_recommended = '';
+    if (
+      data.friends_recommended && 
+      data.friends_recommended.length > 0 &&
+      data.friends_recommended.length > max_friend_recommendations
+    ) {
+      max_friend_recommendations = data.friends_recommended.length;
+      cls_recommended = 'friends-recommended';
+      $('.friends-recommended').removeClass('friends-recommended');
+    }
+
     $container.
       addClass('search-result').
       append(
@@ -159,7 +172,7 @@ var views = {
           attr({
             'class': 'movie-wrapper '+
               (data.guru ? 'guru-recommended ' : '') +
-              (data.friends_recommended && data.friends_recommended.length > 0 ? 'friends-recommended' : ''),
+              cls_recommended,
             href: 'javascript:void(0)'
           }).append(
             $title,
@@ -406,17 +419,18 @@ function setup_map (data) {
     for (var day in response) {
       for (var name in response[day]) {
         if (cinemas[name]) {
-          console.log('ok', name);
           (function (place) {
             google.maps.event.addListener(marker, 'click', function() {
               infowindow.setContent(
-                
+                JSON.stringify(place, null, 2)
               );
               infowindow.open(map, this);
             });
+            console.log(place.getPosition());
+            createMarker(place.getPosition());
           })(response[day][name]);
         } else {
-          console.warn('fail', response[i].name);
+          console.warn('fail', name);
         }
       }
     }
@@ -454,7 +468,6 @@ function get_nearby_cinemas (position) {
       cinemas = {};
       for (var i = 0; i < results.length; i++) {
         cinemas[results[i].name] = results[i];
-        createMarker(results[i]);
       }
       console.log(cinemas);
     }
