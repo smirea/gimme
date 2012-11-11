@@ -1,4 +1,11 @@
 
+var options = {
+  urls: {
+    search: 'http://localhost:8000/api/query?q=',
+    login: 'http://localhost:8000/api/query?'
+  }
+};
+
 var $query;
 var $form;
 var $result;
@@ -151,6 +158,18 @@ window.fbAsyncInit = function() {
     xfbml      : true  // parse XFBML tags on this page?
   });
 
+  FB.Event.subscribe('auth.login', function(response) {
+    if (response.status === 'connected') {
+      console.log('Access token:', response.authResponse.accessToken);
+      console.log('UserID:', response.authResponse.userID);
+      do_login();
+    } else if (response.status === 'not_authorized') {
+      console.log('not authorized');
+    } else {
+      console.log('not logged in');
+    }
+  });
+
   FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
       console.log('Access token:', response.authResponse.accessToken);
@@ -170,7 +189,13 @@ var init_globals = function init_globals () {
   $result = $('#result');
 }
 
-var do_login = function do_login () {
+var do_login = function do_login (response) {
+  $.post(options.urls.login+'fb_id='+response.authResponse.userID+
+                            '&fb_token'+response.authResponse.accessToken,
+  function on_login (reply) {
+    console.log('reply');
+  });
+  /*
   var fields = 'id,name,link,cover,about,picture';
   FB.api('/me?fields='+fields, function on_response (response){ 
     if (response.error) {
@@ -189,6 +214,7 @@ var do_login = function do_login () {
       );
     $('#fb-login').replaceWith($profile);
   });
+*/
 };
 
 var jq_element = function jq_element (type) {
