@@ -18,7 +18,8 @@ var friend_names = [];
 
 var map;
 var infowindow;
-var markers;
+var markers = [];
+var cinemas = {};
 
 // all names ever tagged in the query field
 var tags = [];
@@ -54,12 +55,13 @@ $(function _on_document_load () {
             picture: 'http://graph.facebook.com/1068801676/picture',
             type: 'general'
           };
+          /* hack not necessary anymore :)
           if (result.length > 1) {
             var index = 1 + Math.floor(Math.random() * result.length - 1);
             result[index].friends_recommended = Math.floor(Math.random() * 300);
           }
+          */
         }
-
         for (i=0; i<result.length; ++i) {
           $result.append(views.movie_result(result[i]));
         }
@@ -91,14 +93,14 @@ var views = {
         '<table>'+
           '<tr><td colspan="2" style="font-size:20pt">'+data.name+'</td></tr>'+
           '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
-          '<tr><td><b>friends liked</b></td><td>'+data.friends_recommended+'</td></tr>'+
+          '<tr><td><b>friend likes</b></td><td>'+data.friends_recommended.length+'</td></tr>'+
           '<tr><td><b>rating</b></td><td>'+data.rating+'</td></tr>'+
         '</table>'+
         '<div>'+data.description+'</div>'+
-        '<div>'+data.taglines.join('<br />')+'</div>',
-        $map,
+        '<div>'+data.taglines.join('<br />')+'</div>'+
         '<img src="/static/img/netflix.jpg" />'+
-        '<img src="/static/img/amazon.jpg" />'
+        '<img src="/static/img/amazon.jpg" />',
+        $map
     )
     setup_map(data);
   },
@@ -106,7 +108,9 @@ var views = {
     var $container = jq_element('li');
     var $title = views.movie_title(data);
     var $info = jq_element('div');
+    var $facepile = jq_element('div');
     var url = 'javascript:void(0)';
+    var i;
 
     $title.on('click.expand_info', function _on_click_expand_info () {
       $('.search-result .movie-info').hide();
@@ -124,12 +128,28 @@ var views = {
         views.single_view(data);
       });
 
+    if (data.friends_recommended) {
+      for (i=0; i<data.friends_recommended.length; ++i) {
+        var fr = data.friends_recommended[i];
+        $facepile.append(
+          jq_element('a').attr({
+            href: 'http://facebook.com/' + fr.fbid,
+            target: '_blank',
+            title: fr.name
+          }).append(
+            jq_element('img').
+              attr('src', 'http://graph.facebook.com/'+fr.fbid+'/picture')
+          )
+        );
+      }
+    }
+
     $info.
       hide().
       addClass('movie-info').
-      append('<div>to be added l8er</div>',
+      append('<div>'+(data.taglines.length > 0 ? data.taglines[0] : '')+'</div>',
         $movie_link,
-        '<div class="clearfix"></div>'
+        $facepile
       );
 
     $container.
@@ -139,7 +159,7 @@ var views = {
           attr({
             'class': 'movie-wrapper '+
               (data.guru ? 'guru-recommended ' : '') +
-              (data.friends_recommended ? 'friends-recommended' : ''),
+              (data.friends_recommended && data.friends_recommended.length > 0 ? 'friends-recommended' : ''),
             href: 'javascript:void(0)'
           }).append(
             $title,
@@ -189,11 +209,12 @@ var views = {
       jq_element('span').addClass('name').html(data.name)
     );
 
-    if (data.friends_recommended) {
+    if (data.friends_recommended && data.friends_recommended.length > 0) {
       $wrapper.append(
+        data.friends_recommended.length,
         jq_element('i').
           addClass('icon-user has-tooltip').
-          attr('title', data.friends_recommended+' friends recommended this')
+          attr('title', data.friends_recommended.length +' friends recommended this')
       );
     }
     if (data.guru) {
@@ -379,10 +400,26 @@ function setup_map (data) {
 
   set_location();
   
-  $.post(options.url.cinemas, {
+  $.get(options.urls.cinemas, {
     q: data.name
   }, function (response) {
-    console.log(response);
+    for (var day in response) {
+      for (var name in response[day]) {
+        if (cinemas[name]) {
+          console.log('ok', name);
+          (function (place) {
+            google.maps.event.addListener(marker, 'click', function() {
+              infowindow.setContent(
+                
+              );
+              infowindow.open(map, this);
+            });
+          })(response[day][name]);
+        } else {
+          console.warn('fail', response[i].name);
+        }
+      }
+    }
   });
 
   function set_location () {
@@ -393,6 +430,7 @@ function setup_map (data) {
 
     google.maps.event.addListenerOnce(GeoMarker, 'position_changed', function(){
       map.setCenter(this.getPosition());
+      get_nearby_cinemas(this.getPosition());
     });
 
     google.maps.event.addListener(GeoMarker, 'geolocation_error', function(e) {
@@ -401,6 +439,26 @@ function setup_map (data) {
 
     GeoMarker.setMap(map);
   }
+}
+
+function get_nearby_cinemas (position) {
+  var request = {
+    location: position,
+    radius: 12 * 1000,
+    types: ['movie_theater']
+  };
+  infowindow = new google.maps.InfoWindow();
+  var service = new google.maps.places.PlacesService(map);
+  service.nearbySearch(request, function callback(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      cinemas = {};
+      for (var i = 0; i < results.length; i++) {
+        cinemas[results[i].name] = results[i];
+        createMarker(results[i]);
+      }
+      console.log(cinemas);
+    }
+  });
 }
 
 function createMarker(place) {
@@ -413,7 +471,6 @@ function createMarker(place) {
   markers.push(marker);
 
   google.maps.event.addListener(marker, 'click', function() {
-    console.log(JSON.stringify(place, null, 2));
     infowindow.setContent(
       '<img src="' + place.icon + '" height="32" style="float:left; margin: 3px 5px 0 0" />' +
       '<b>' + place.name + '</b>' +
