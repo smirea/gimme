@@ -120,8 +120,11 @@ def process_query(query, tags, input_query_set):
   match = genre_regex.search(query)
   if match:
     genre_name = match.group(1)
-    genre = Genre.objects.get(name=genre_name)
-    query_set = query_set.filter(movie_genres=genre)
-  else:
-    query_set = query_set.filter(name__icontains=query)
+    try:
+      genre = Genre.objects.get(name=genre_name)
+      return query_set.filter(movie_genres=genre)
+    except Genre.DoesNotExist:
+      pass
+
+  query_set = query_set.filter(name__icontains=query)
   return query_set
