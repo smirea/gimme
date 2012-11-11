@@ -58,12 +58,13 @@ def update_movies(user_profile, graph):
       best_fit = graph.get_approximate_movie_data(m['name'])
       Seen.like_movie(user_profile, movie, best_fit)
 
-@require_POST
 def cinema(request):
-  if (not 'q' in request.POST):
+  if (not 'q' in request.GET):
     raise PermissionDenied
-  return HttpResponse(json.dumps(get_movie_near(request.POST['q'])),
-      content_type='application/json')
+  days = {}
+  for i in xrange(4):
+    days[i] = get_movie_near(request.GET['q'], date=i)
+  return HttpResponse(json.dumps(days), content_type='application/json')
 
 @require_POST
 def login_view(request):
