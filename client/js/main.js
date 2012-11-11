@@ -2,7 +2,7 @@
 var options = {
   urls: {
     search: 'http://localhost:8000/api/query?q=',
-    login: 'http://localhost:8000/api/query?'
+    login: 'http://localhost:8000/api/login?'
   }
 };
 
@@ -162,7 +162,7 @@ window.fbAsyncInit = function() {
     if (response.status === 'connected') {
       console.log('Access token:', response.authResponse.accessToken);
       console.log('UserID:', response.authResponse.userID);
-      do_login();
+      do_login(response);
     } else if (response.status === 'not_authorized') {
       console.log('not authorized');
     } else {
@@ -174,7 +174,7 @@ window.fbAsyncInit = function() {
     if (response.status === 'connected') {
       console.log('Access token:', response.authResponse.accessToken);
       console.log('UserID:', response.authResponse.userID);
-      do_login();
+      //do_login();
     } else if (response.status === 'not_authorized') {
       console.log('not authorized');
     } else {
@@ -190,10 +190,12 @@ var init_globals = function init_globals () {
 }
 
 var do_login = function do_login (response) {
-  $.post(options.urls.login+'fb_id='+response.authResponse.userID+
-                            '&fb_token'+response.authResponse.accessToken,
+  $.post(options.urls.login, {
+    fb_id: response.authResponse.userID,
+    fb_token: response.authResponse.accessToken
+  },
   function on_login (reply) {
-    console.log('reply');
+    console.log(reply);
   });
   /*
   var fields = 'id,name,link,cover,about,picture';
