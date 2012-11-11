@@ -50,8 +50,8 @@ $(function _on_document_load () {
       handlers.search($query.val(), function _on_search_reply (result) {
         var i;
         var expand_id;
-        if (result.length > 0) {
-          result[0].guru = {
+        if (result.length > 1) {
+          result[1 + Math.floor(Math.random() * result.length-1)].guru = {
             name: 'Corneliu Prodescu',
             picture: 'http://graph.facebook.com/1068801676/picture',
             type: 'general'
