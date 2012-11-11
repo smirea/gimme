@@ -77,7 +77,7 @@ var views = {
       $form.show().css({
         opacity: 1
       });
-      $single_view.hide();
+      $single_view.empty().hide();
     });
   },
   single_view: function single_view (data) {
