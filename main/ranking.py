@@ -1,3 +1,5 @@
+import math
+
 from gimme.main.models import Seen
 
 def rank_movies(movies, current_user, users):
@@ -7,7 +9,7 @@ def rank_movies(movies, current_user, users):
   remove_ids = [current_profile.pk]
   remove_ids.extend(p.pk for p in users)
 
-  person_ids = friend_ids[:] + remove_ids[:]
+  person_ids = set(friend_ids) | set(remove_ids)
 
   output_movies = []
   for movie in movies:
@@ -30,8 +32,25 @@ def rank_movies(movies, current_user, users):
 
     if movie._should_skip:
       continue
-    movie._score = \
-        (movie.votes * movie.rating + 25000 * 7.1) / (movie.votes + 25000)
+
+    """
+    if movie.fb_likes == 0:
+      best_fit = Graph.get_approximate_movie_data(movie.name)
+      if best_fit != None:
+        fb_likes = best_fit.get('fb_likes', 0)
+    """
+    
+    imdb_rating = (movie.votes * movie.rating + 25000 * 7.1) / (movie.votes + 25000)
+    if movie.fb_likes == 0:
+      like_rating = 6
+    else:
+      like_rating = (math.log(movie.fb_likes+1.0)/2.0) 
+    friend_rating = (math.atan(0.28 * len(movie._friend_recommend)))
+
+    print movie, imdb_rating, like_rating, friend_rating
+
+    movie._score = imdb_rating + like_rating + friend_rating
+
     output_movies.append(movie)
 
   output_movies.sort(key=lambda movie: -movie._score)
