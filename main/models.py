@@ -9,7 +9,6 @@ class Movie(models.Model):
   year = models.IntegerField(default=0, db_index=True)
   rating = models.FloatField(default=0.0, db_index=True)
   votes = models.IntegerField(default=0, db_index=True)
-  tagline = models.CharField(max_length=1024)
   description = models.TextField()
   imdb_url = models.URLField(max_length=256)
   fb_url = models.URLField(max_length=256)
@@ -20,6 +19,10 @@ class Movie(models.Model):
     return u'Movie id={0} name={1} year={2}'.format(
         self.id, self.name, self.year
     )
+
+class Tagline(models.Model):
+  movie = models.ForeignKey(Movie) 
+  line = models.CharField(max_length=256)
 
 class Genre(models.Model):
   name = models.CharField(max_length=64)
