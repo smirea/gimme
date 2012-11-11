@@ -25,8 +25,8 @@ class Movie(models.Model):
       year = 0
     res = Movie.objects.filter(name__icontains=movie_data['name'])
     if year != 0:
-      res.filter(year__gt=year-2).filter(year__lt=year+2)
-    res.order_by('-votes')
+      res = res.filter(year__gt=year-2).filter(year__lt=year+2)
+    res = res.order_by('-votes')
     results = res.all()
     if len(results) > 0:
       return results[0]

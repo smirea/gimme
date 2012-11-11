@@ -62,7 +62,8 @@ def update_movies(user_profile, graph):
     movie = Movie.get_movie(m)
     if movie != None:
       best_fit = graph.get_approximate_movie_data(m['name'])
-      Seen.like_movie(user_profile, movie, best_fit)
+      if best_fit != None:
+        Seen.like_movie(user_profile, movie, best_fit)
 
 def cinema(request):
   if (not 'q' in request.GET):
@@ -89,18 +90,18 @@ def login_view(request):
   try:
     user_profile = Person.objects.get(fbid=fb_id)
     user_profile.update_info(personal_data)
-    update_movies(user_profile, graph)
   except Person.DoesNotExist:
     user_profile = Person.create_user(personal_data)
+    update_movies(user_profile, graph)
 
     all_friend_data = graph.get_personal_data_multi(graph.get_friends(fb_id))
     for friend_id, friend_data in all_friend_data.iteritems():
       try:
         friend_profile = Person.objects.get(fbid=friend_id)
         friend_profile.update_info(friend_data)
-        update_movies(friend_profile, graph)
       except Person.DoesNotExist:
         friend_profile = Person.create_user(friend_data)
+        update_movies(friend_profile, graph)
 
       user_profile.friends.add(friend_profile)
 
@@ -146,12 +147,12 @@ def query(request):
     'id', 'name', 'year',
     ('rating', lambda movie: "%.1f" % movie.rating),
     'votes', 'description',
-    ('taglines', lambda movie: list(movie.tagline_set.all())),
+    ('taglines', lambda movie: [tagline.line for tagline
+                                in movie.tagline_set.all()]),
     ('likes', 'fb_likes'),
-    'imdb_url', 'fb_url',
+    'imdb_url', 'fbid',
     ('genres', lambda movie: [genre.name for genre
                               in movie.movie_genres.all()]),
-    ('picture', 'picture_url'),
     ('friends_recommended', lambda movie: 0),
     ('guru', lambda movie: None)
   ]

@@ -33,10 +33,12 @@ class Graph(object):
     limit = 25 # hardcoded
     url = Graph.base_url + \
       "/search?q={}&type=page&fields={}&limit={}".format(
-        movie_name, Graph.movie_fields, limit
+      urllib.quote(movie_name.encode('utf8')), Graph.movie_fields, limit
     )
     data = Graph.query(url)
     data = sorted(data['data'], key=lambda x: x.get('likes', 0))
+    if len(data) == 0:
+      return None
     return data[-1]
 
   @staticmethod

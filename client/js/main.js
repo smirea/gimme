@@ -216,6 +216,9 @@ window.fbAsyncInit = function() {
     if (response.status === 'connected') {
       console.log('Access token:', response.authResponse.accessToken);
       console.log('UserID:', response.authResponse.userID);
+      if (!window.userData) {
+        do_login(response);
+      }
     } else if (response.status === 'not_authorized') {
       console.log('not authorized');
     } else {
