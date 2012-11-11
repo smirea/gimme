@@ -13,6 +13,7 @@ from gimme.main.models import Movie, Person, Seen
 from gimme.main.opengraph import Graph
 from gimme.main.cinema import *
 from gimme.main.nlp import process_query
+from gimme.main.ranking import rank_movies
 
 
 def index(request):
@@ -139,8 +140,9 @@ def query(request):
   if q:
     tags = request.GET.getlist('tags[]')
     tagged_profiles = User.objects.filter(id__in=tags).all()
-    queryset = process_query(q, tagged_profiles, queryset)
-  movies = queryset.order_by('-votes')[:10]
+    queryset, tagged_profiles = process_query(q, tagged_profiles, queryset)
+  movies = rank_movies(queryset.order_by('-votes')[:100],
+                       request.user, tagged_profiles)
 
   data = []
   model_fields = [
@@ -153,7 +155,7 @@ def query(request):
     'imdb_url', 'fbid',
     ('genres', lambda movie: [genre.name for genre
                               in movie.movie_genres.all()]),
-    ('friends_recommended', lambda movie: 0),
+    ('friends_recommended', lambda movie: movie._friend_recommend),
     ('guru', lambda movie: None)
   ]
 

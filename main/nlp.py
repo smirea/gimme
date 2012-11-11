@@ -122,9 +122,9 @@ def process_query(query, tags, input_query_set):
     genre_name = match.group(1)
     try:
       genre = Genre.objects.get(name=genre_name)
-      return query_set.filter(movie_genres=genre)
+      return query_set.filter(movie_genres=genre), tags
     except Genre.DoesNotExist:
       pass
 
   query_set = query_set.filter(name__icontains=query)
-  return query_set
+  return query_set, tags
