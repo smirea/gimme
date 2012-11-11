@@ -1,5 +1,6 @@
 import os
 import json
+import os
 
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import authenticate, login, logout
@@ -8,8 +9,9 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
-from gimme.main.models import Movie, Person
+from gimme.main.models import Movie, Person, Seen
 from gimme.main.opengraph import Graph
+from gimme.main.cinema import *
 from gimme.main.nlp import process_query
 
 
@@ -35,6 +37,33 @@ def index(request):
   content += '</body></html>'
   return HttpResponse(content)
 
+def test(request):
+  user = request.user.get_profile()
+  fbid = user.fbid
+  #TODO: ...
+  graph = Graph('AAAAAAITEghMBAPZCnBPmR1Tl7ynchZBfZArK4seZBGrZBga1vRL4fySuipXzXTevSvOf61PFypXbXAXuli1zoIVAZBBB1ZA8EYJ8MXVmB2auNHQZBNXT88EE')
+  update_movies(user, graph)
+  friends = graph.get_friends(fbid)
+  for f in friends:
+    friend_profile = Person.objects.get(fbid=f)
+    update_movies(friend_profile, graph)
+  return HttpResponse(json.dumps(f),
+      content_type='application/json')
+
+def update_movies(user_profile, graph):
+  movies = graph.get_movies(user_profile.fbid)
+  for m in movies:
+    movie = Movie.get_movie(m)
+    if movie != None:
+      best_fit = graph.get_approximate_movie_data(m['name'])
+      Seen.like_movie(user_profile, movie, best_fit)
+
+@require_POST
+def cinema(request):
+  if (not 'q' in request.POST):
+    raise PermissionDenied
+  return HttpResponse(json.dumps(get_movie_near(request.POST['q'])),
+      content_type='application/json')
 
 @require_POST
 def login_view(request):
@@ -46,20 +75,23 @@ def login_view(request):
 
   graph = Graph(request.POST['fb_token'])
   personal_data = graph.get_personal_data()
+
   if personal_data.get(u'id', None) != unicode(fb_id):
     raise PermissionDenied
 
   try:
     user_profile = Person.objects.get(fbid=fb_id)
     user_profile.update_info(personal_data)
+    update_movies(user_profile, graph)
   except Person.DoesNotExist:
     user_profile = Person.create_user(personal_data)
 
-    all_friend_data = graph.get_personal_data_multi(graph.get_my_friends())
+    all_friend_data = graph.get_personal_data_multi(graph.get_friends(fb_id))
     for friend_id, friend_data in all_friend_data.iteritems():
       try:
         friend_profile = Person.objects.get(fbid=friend_id)
         friend_profile.update_info(friend_data)
+        update_movies(friend_profile, graph)
       except Person.DoesNotExist:
         friend_profile = Person.create_user(friend_data)
 

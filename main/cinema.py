@@ -1,4 +1,5 @@
 import lxml.html
+import re
 
 class BaseCinemaUrl(object):
   BASE_PAGE = 'http://www.google.com/movies'
@@ -35,13 +36,19 @@ def get_movie_near(movie, location='london', date='0'):
   url = BaseCinemaUrl(location, date, movie).get_url()
   page = lxml.html.parse(url).getroot()
   theaters = page.xpath('//div[@class="theater"]')
-  result = []
+  result = {}
   for theater in theaters:
-    nodes = theater.xpath('//div[@class="name"]/a')
+    nodes = theater.xpath('div/div[@class="name"]/a')
     if len(nodes) != 0:
-      result.append(nodes[0].text_content())
+      place = nodes[0].text_content()
+      times = theater.xpath('div[@class="times"]/span')
+      final_times = []
+      for t in times:
+        text = t.text_content()
+        res = re.findall('([0-9:]{5})', text)
+        final_times.append(res[0])
+      result[place] = final_times
   return result
 
 if __name__ == '__main__':
-  print get_movies_near()
   print get_movie_near('Argo')

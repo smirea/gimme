@@ -4,7 +4,7 @@ import json
 class Graph(object):
   base_url = 'https://graph.facebook.com'
   personal_fields = 'id,first_name,last_name,name,gender'
-  movie_fields = 'id,likes,name,category,link,created_time'
+  movie_fields = 'id,likes,name,category,link,release_date'
 
   def __init__(self, access_token):
     self.access_token = access_token
@@ -35,8 +35,8 @@ class Graph(object):
       "/search?q={}&type=page&fields={}&limit={}".format(
         movie_name, Graph.movie_fields, limit
     )
-    data = Graph.query(url)["data"]
-    data = sorted(data, key=lambda x: x["likes"])
+    data = Graph.query(url)
+    data = sorted(data['data'], key=lambda x: x.get('likes', 0))
     return data[-1]
 
   @staticmethod
@@ -44,7 +44,7 @@ class Graph(object):
      url = Graph.base_url + "/{}?fields={}".format(
          movie_id, Graph.movie_fields
      )
-     data = Graph.query(url)
+     return Graph.query(url)
 
 
   def get_movies(self, user_id = None):
@@ -60,9 +60,11 @@ class Graph(object):
     personal_data = self.get_personal_data(friend_id)
     movies = self.get_movies(friend_id)
 
-  def get_my_friends(self):
+  def get_friends(self, user_id=None):
+    if user_id == None:
+      user_id = "me"
     url = Graph.base_url + \
-        "/me/friends?access_token={}".format(self.access_token)
+        "/{}/friends?access_token={}".format(user_id, self.access_token)
     data = Graph.get_data(url)
     return [entry['id'] for entry in data]
 
@@ -85,7 +87,4 @@ class Graph(object):
 if __name__ == '__main__':
   access_token='AAAAAAITEghMBAPANhWj1XkPaGF6DTE8curKa5soiNZCgkB2rhaXoKW9fh1Ia9w2m3yIKUZBUCeZC38lkOMgZBSvKMrCaQtKZASgdYQhwRyFNZBONi2lsHa'
   graph = Graph(access_token)
-  #graph.get_my_data()
-  #graph.get_friend_data(1208022)
-  #Graph.get_approximate_movie_data('Avengers')
-  #print graph.get_movies()
+  graph.get_approximate_movie_data('V for Vendetta')
