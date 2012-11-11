@@ -106,7 +106,7 @@ def process_query(query, tags, input_query_set):
         query_set = query_set.filter(rating__gte=float(rated_constraint[6:]))
       else:
         assert rated_constraint.startswith('below ')
-        query_set = query_set.filter(rating__lte=float(rated_constraint[7:]))
+        query_set = query_set.filter(rating__lte=float(rated_constraint[6:]))
       done = False
 
   # Last minute adjustments
