@@ -1,4 +1,5 @@
 import md5
+import re
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,10 +12,27 @@ class Movie(models.Model):
   votes = models.IntegerField(default=0, db_index=True)
   description = models.TextField()
   imdb_url = models.URLField(max_length=256)
-  fb_url = models.URLField(max_length=256)
+  fb_url = models.URLField(max_length=1024)
   fb_likes = models.IntegerField(default=0, db_index=True)
   picture_url = models.URLField(max_length=256)
 
+  @staticmethod
+  def get_movie(movie_data):
+    year = movie_data.get('release_date', '')
+    years = re.findall('([0-9]{4})', year)
+    if len(years) > 0:
+      year = int(years[0])
+    else:
+      year = 0
+    res = Movie.objects.filter(name__icontains=movie_data['name'])
+    if year != 0:
+      res.filter(year__gt=year-2).filter(year__lt=year+2)
+    res.order_by('-votes')
+    results = res.all()
+    if len(results) > 0:
+      return results[0]
+    else:
+      return None
 
   def __unicode__(self):
     return u'Movie id={0} name={1} year={2}'.format(
@@ -119,7 +137,7 @@ class Seen(models.Model):
   @staticmethod
   @transaction.commit_on_success
   def like_movie(user, movie, movie_data):
-    seen = Seen(person=user,movie=movie,liked=True,when_added=movie_data[u'created_time'])
+    seen = Seen(person=user,movie=movie,liked=True)
     seen.save()
 
     movie.fb_url = movie_data.get(u'link', '')
