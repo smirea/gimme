@@ -15,7 +15,8 @@ def rank_movies(movies, current_user, users):
   for movie in movies:
     movie._watched_by = list(
       Seen.objects.filter(movie=movie,
-                          person__user__in=person_ids).all())
+                          person__user__in=person_ids).select_related('person',
+                            'person__user').all())
     movie._should_skip = False
     movie._friend_recommend = []
     for seen in movie._watched_by:
@@ -46,8 +47,6 @@ def rank_movies(movies, current_user, users):
     else:
       like_rating = (math.log(movie.fb_likes+1.0)/2.0) 
     friend_rating = (math.atan(0.28 * len(movie._friend_recommend)))
-
-    print movie, imdb_rating, like_rating, friend_rating
 
     movie._score = imdb_rating + like_rating + friend_rating
 

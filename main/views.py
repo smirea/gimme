@@ -141,7 +141,7 @@ def query(request):
     tags = request.GET.getlist('tags[]')
     tagged_profiles = User.objects.filter(id__in=tags).all()
     queryset, tagged_profiles = process_query(q, tagged_profiles, queryset)
-  movies = rank_movies(queryset.order_by('-votes')[:100],
+  movies = rank_movies(queryset.order_by('-votes')[:50],
                        request.user, tagged_profiles)
 
   data = []
