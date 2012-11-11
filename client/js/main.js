@@ -29,6 +29,7 @@ var tags = [];
 $(function _on_document_load () {
   init_globals();
   load_friends();
+  setup_ui();
 
   var last_start = -1;
   var last_end = -1;
@@ -56,7 +57,12 @@ $(function _on_document_load () {
       updater: function (item) {
         tags.push(friends[item].id);
         var value = $query.val();
-        return value.slice(0, last_start) + '@' + item + value.slice(last_end);
+        return value.slice(0, last_start) + '@' + item + ' ' + value.slice(last_end);
+      },
+      highlighter: function (item) {
+        return '<img src="https://graph.facebook.com/'+
+                  friends[item].fb_id+
+                '/picture" width="20"/> '+item;
       }
     });
 
@@ -218,6 +224,24 @@ window.fbAsyncInit = function() {
   });
 };
 
+var setup_ui = function setup_ui () {
+  if (window.userData) {
+    var $profile = jq_element('div');
+    $profile
+      .attr({
+        'class': 'pull-right'
+      })
+      .html(
+        '<a href="http://facebook.com/'+userData.fbid+'" target="_blank">' +
+          '<span class="user_name">'+userData.first_name+' '+
+              userData.last_name+' </span>' +
+          '<img src="http://graph.facebook.com/'+userData.fbid+'/picture" width="40" alt="fb_pic" />' +
+        '</a>'
+      );
+    $('#fb-login').replaceWith($profile);
+  }
+}
+
 var load_friends = function load_friends () {
   $.get(options.urls.friend_list, function _get_friends (response) {
     var fr;
@@ -248,26 +272,6 @@ var do_login = function do_login (response) {
   function on_login (reply) {
     console.log(reply);
   });
-  /*
-  var fields = 'id,name,link,cover,about,picture';
-  FB.api('/me?fields='+fields, function on_response (response){ 
-    if (response.error) {
-      console.warn(response.error);
-    }
-    var $profile = jq_element('div');
-    $profile
-      .attr({
-        'class': 'pull-right'
-      })
-      .html(
-        '<a href="'+response.link+'" target="_blank">' +
-          '<img src="'+response.picture.data.url+'" width="40" alt="fb_pic" />' +
-          '<span class="user_name">'+response.name+'</span>' +
-        '</a>'
-      );
-    $('#fb-login').replaceWith($profile);
-  });
-*/
 };
 
 var jq_element = function jq_element (type) {

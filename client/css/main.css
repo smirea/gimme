@@ -1,15 +1,30 @@
 body {
   background: #eaeaea;
+  padding: 60px 0;
 }
 
 #menu {
-  
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  background-image: -webkit-linear-gradient(top,#222,#111);
+  line-height: 50px;
+}
+
+#menu a {
+  color: #fff;
+}
+#menu a.brand {
+  font-size: 20pt;
+  font-weight: bold;
+  text-decoration: none;
 }
 
 #query-form {
   width: 90%;
   min-width: 350px;
-  margin: 0 auto;
+  margin: 150px auto 0 auto;
   padding: 0;
 }
 
@@ -102,3 +117,8 @@ body {
 .tag.normal {}
 .tag.thousands {color: green;}
 .tag.millions {color: #0000ff;}
+
+input:hover::-webkit-input-placeholder {
+  opacity: 0;
+  -webkit-transition: opacity 1s;
+}

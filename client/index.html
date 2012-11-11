@@ -22,12 +22,12 @@
   <![endif]-->
 
   <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
-  <nav id="menu" class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-      <div class="container">
-      <a class="brand" href="#">gimmme ...</a>
-      <fb:login-button id="fb-login" class="pull-right" autologoutlink="true" perms="email,publish_actions,user_about_me,user_actions.music,user_actions.news,user_actions.video,user_activities,user_birthday,user_education_history,user_events,user_games_activity,user_groups,user_hometown,user_interests,user_likes,user_location,user_notes,user_photos,user_questions,user_relationship_details,user_relationships,user_status,user_subscriptions,user_videos,user_website,user_work_history,friends_about_me,friends_actions.music,friends_actions.news,friends_actions.video,friends_activities,friends_birthday,friends_education_history,friends_events,friends_games_activity,friends_groups,friends_hometown,friends_interests,friends_likes,friends_location,friends_notes,friends_photos,friends_questions,friends_relationship_details,friends_relationships,friends_religion_politics,friends_status,friends_subscriptions,friends_videos,friends_website,friends_work_history,ads_management,create_event,create_note,export_stream,friends_online_presence,manage_friendlists,manage_notifications,manage_pages,offline_access,photo_upload,publish_checkins,publish_stream,read_friendlists,read_insights,read_mailbox,read_page_mailboxes,read_requests,read_stream,rsvp_event,share_item,sms,status_update,user_online_presence,video_upload,xmpp_login">Log in with facebook</fb:login-button>
-      </div>
+  <nav id="menu" class="">
+    <div class="container">
+    <a class="brand" href="#" style="font-family:30pt;">
+      gimme ... 
+    </a>
+    <fb:login-button id="fb-login" class="pull-right" autologoutlink="true" perms="email,publish_actions,user_about_me,user_actions.music,user_actions.news,user_actions.video,user_activities,user_birthday,user_education_history,user_events,user_games_activity,user_groups,user_hometown,user_interests,user_likes,user_location,user_notes,user_photos,user_questions,user_relationship_details,user_relationships,user_status,user_subscriptions,user_videos,user_website,user_work_history,friends_about_me,friends_actions.music,friends_actions.news,friends_actions.video,friends_activities,friends_birthday,friends_education_history,friends_events,friends_games_activity,friends_groups,friends_hometown,friends_interests,friends_likes,friends_location,friends_notes,friends_photos,friends_questions,friends_relationship_details,friends_relationships,friends_religion_politics,friends_status,friends_subscriptions,friends_videos,friends_website,friends_work_history,ads_management,create_event,create_note,export_stream,friends_online_presence,manage_friendlists,manage_notifications,manage_pages,offline_access,photo_upload,publish_checkins,publish_stream,read_friendlists,read_insights,read_mailbox,read_page_mailboxes,read_requests,read_stream,rsvp_event,share_item,sms,status_update,user_online_presence,video_upload,xmpp_login">Log in with facebook</fb:login-button>
     </div>
   </nav>
 
@@ -38,10 +38,8 @@
 
   </form>
 
-  <hr>
-
-  <footer>
-    <p>&copy; Gimme 2012</p>
+  <footer style="text-align:center; position:fixed; z-index: -1; bottom: 0; left:0; right: 0">
+    <img src="/static/img/gimme.png" alt="gimme!" width="100%" style="opacity:0.1" />
   </footer>
 
 
@@ -50,6 +48,7 @@
     window.jQuery || document.write('<script src="js/vendor/jquery-1.8.2.min.js"><\/script>')
   </script>
   <script src="/static/js/jquery.caret.js"></script>
+  <script src="/static/js/jquery.animate-colors.js"></script>
 
   <script src="/static/js/vendor/bootstrap.min.js"></script>
 
