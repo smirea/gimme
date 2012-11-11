@@ -58,7 +58,8 @@ def process_query(query, tags, input_query_set):
     return None, None
 
   # Rating constraint regex
-  rated_regex = re.compile("(rated below \d(\.\d)?|rated above \d(\.\d)?)$")
+  rated_regex = re.compile(
+      "(rated (?:below|above|under) \d(\.\d)?)$")
 
   # name_fragment = "\w+\W+\w+"
   # with_actor_regex = re.compile("starring " + name_fragment)
@@ -105,7 +106,8 @@ def process_query(query, tags, input_query_set):
       if rated_constraint.startswith('above '):
         query_set = query_set.filter(rating__gte=float(rated_constraint[6:]))
       else:
-        assert rated_constraint.startswith('below ')
+        assert (rated_constraint.startswith('below ') or
+                rated_constraint.startswith('under '))
         query_set = query_set.filter(rating__lte=float(rated_constraint[6:]))
       done = False
 
@@ -114,6 +116,10 @@ def process_query(query, tags, input_query_set):
     query = query[6:]
   elif query.startswith('give me '):
     query = query[8:]
+
+  # Generic movie
+  if query == 'a movie' or query == 'an movie':
+    return query_set, tags
 
   # Check for Genre queries
   genre_regex = re.compile('^an? ((?:\w|-)+)(?: movie| film)?$')
