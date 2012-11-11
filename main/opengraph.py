@@ -4,7 +4,7 @@ import json
 class Graph(object):
   base_url = 'https://graph.facebook.com'
   personal_fields = 'id,first_name,last_name,name,gender'
-  movie_fields = 'id,likes,name,category'
+  movie_fields = 'id,likes,name,category,link,created_time'
 
   def __init__(self, access_token):
     self.access_token = access_token
@@ -37,28 +37,28 @@ class Graph(object):
     )
     data = Graph.query(url)["data"]
     data = sorted(data, key=lambda x: x["likes"])
-    movie = data[-1]
-    Graph.get_movie_data(movie["id"]) # print, return or model here?
+    return data[-1]
 
   @staticmethod
   def get_movie_data(movie_id):
-    url = Graph.base_url + "/{}".format(movie_id)
-    data = Graph.query(url)
-    print data
+     url = Graph.base_url + "/{}?fields={}".format(
+         movie_id, Graph.movie_fields
+     )
+     data = Graph.query(url)
 
-  def get_movies(self, user_id):
+
+  def get_movies(self, user_id = None):
     if user_id == None:
       user_id = "me"
-    url = Graph.base_url + "/{}/movies?access_token={}".format(user_id,self.access_token)
-    data = Graph.get_data(url)
-    movies = []
-    for entry in data:
-        e = {}
-        e['id'] = entry.setdefault('id',0)
-        e['name'] = entry.setdefault('name', None)
-        e['created_time'] = entry.setdefault('created_time',None)
-        movies.append(e)
-    return movies
+    url = Graph.base_url + "/{}/movies?access_token={}&fields={}".format(
+        user_id,self.access_token, Graph.movie_fields
+    )
+    return Graph.get_data(url)
+
+  def get_friend_data(self, friend_id):
+    #TODO: replace with individual calls, then remove
+    personal_data = self.get_personal_data(friend_id)
+    movies = self.get_movies(friend_id)
 
   def get_my_friends(self):
     url = Graph.base_url + \
@@ -83,9 +83,9 @@ class Graph(object):
 
 
 if __name__ == '__main__':
-  access_token='AAAAAAITEghMBAI5nVAbUg3Y9UFeUzOV51uo9fYXUQo1UyV4F9EbbeFm5XQLAlCvWsnEHVclM6A2wjznPVrvLlhCQh3HeLzc4Aoe0D0denoT1XOjb'
+  access_token='AAAAAAITEghMBAPANhWj1XkPaGF6DTE8curKa5soiNZCgkB2rhaXoKW9fh1Ia9w2m3yIKUZBUCeZC38lkOMgZBSvKMrCaQtKZASgdYQhwRyFNZBONi2lsHa'
   graph = Graph(access_token)
   #graph.get_my_data()
   #graph.get_friend_data(1208022)
-  #Graph.get_movie_data(255794484489801)
   #Graph.get_approximate_movie_data('Avengers')
+  #print graph.get_movies()

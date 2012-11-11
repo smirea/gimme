@@ -15,6 +15,7 @@ class Movie(models.Model):
   fb_likes = models.IntegerField(default=0, db_index=True)
   picture_url = models.URLField(max_length=256)
 
+
   def __unicode__(self):
     return u'Movie id={0} name={1} year={2}'.format(
         self.id, self.name, self.year
@@ -114,6 +115,17 @@ class Seen(models.Model):
   liked = models.BooleanField(default=False)
   review = models.TextField(null=True, blank=True, default=None)
   when_added = models.DateTimeField(auto_now_add=True)
+
+  @staticmethod
+  @transaction.commit_on_success
+  def like_movie(user, movie, movie_data):
+    seen = Seen(person=user,movie=movie,liked=True,when_added=movie_data[u'created_time'])
+    seen.save()
+
+    movie.fb_url = movie_data.get(u'link', '')
+    movie.fb_likes = movie_data.get(u'likes', 0)
+    movie.save()
+
 
   def __unicode__(self):
     return u'Movie id={0} seen by fbid={1}'.format(
