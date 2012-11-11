@@ -4,11 +4,13 @@ import json
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
 from gimme.main.models import Movie, Person
 from gimme.main.opengraph import Graph
+from gimme.main.nlp import process_query
 
 
 def index(request):
@@ -95,13 +97,19 @@ def query(request):
 
   queryset = Movie.objects.all()
   if q:
-    queryset = queryset.filter(name__icontains=q)
+    tags = request.GET.getlist('tags[]')
+    tagged_profiles = User.objects.filter(id__in=tags).all()
+    queryset = process_query(q, tagged_profiles, queryset)
   movies = queryset.order_by('-votes')[:10]
 
   data = []
   model_fields = [
-    'id', 'name', 'year', 'rating', 'votes', 'tagline', 'description',
-    ('likes', 'fb_likes'), 'imdb_url', 'fb_url',
+    'id', 'name', 'year',
+    ('rating', lambda movie: "%.1f" % movie.rating),
+    'votes', 'description',
+    ('taglines', lambda movie: list(movie.tagline_set.all())),
+    ('likes', 'fb_likes'),
+    'imdb_url', 'fb_url',
     ('genres', lambda movie: [genre.name for genre
                               in movie.movie_genres.all()]),
     ('picture', 'picture_url'),
