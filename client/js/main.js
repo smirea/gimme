@@ -346,6 +346,9 @@ var setup_typeahead = function setup_typeahead () {
                 '/picture" width="20"/> '+item;
       }
     });
+    $query[0].onwebkitspeechchange = function () {
+      $form.submit();
+    }
 }
 
 var setup_ui = function setup_ui () {
